@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Steganography Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #5c8eb4;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #2c3e50;
+    }
+
+    h2 {
+      color: #34495e;
+      margin-top: 40px;
+    }
+
+    img.main-image {
+      margin-top: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    form {
+      display: inline-block;
+      text-align: left;
+      background-color: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+      width: 300px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input[type="file"],
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    input[type="submit"] {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #2980b9;
+    }
+
+    .section {
+      margin-bottom: 60px;
+    }
+
+    .preview {
+      display: block;
+      margin: 15px auto;
+      max-width: 100%;
+      height: auto;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>STEGANOGRAPHY</h1>
+  <img class="main-image" src="https://www.simplilearn.com/ice9/free_resources_article_thumb/What_Is_Steganography1.jpg" alt="stegano" style="width:500px;height:300px;" />
+
+  <!-- Encode Section -->
+  <div class="section">
+    <h2>Encode</h2>
+
+    <form action="/encode" method="post" enctype="multipart/form-data">
+      <label for="image-encode">Select image:</label>
+      <input type="file" id="image-encode" name="image" accept="image/*" required onchange="previewImage(event, 'preview-encode')" />
+
+      <img id="preview-encode" class="preview" style="display:none;" />
+
+      <label for="message">Enter the secret message:</label>
+      <input type="text" name="message" id="message" required />
+
+      <label for="pwd">Password (optional):</label>
+      <input type="password" id="pwd" name="pwd" />
+
+      <input type="submit" value="Encode" />
+    </form>
+  </div>
+
+  <!-- Decode Section -->
+  <div class="section">
+    <h2>Decode</h2>
+
+    <form action="/decode" method="post" enctype="multipart/form-data">
+      <label for="pwd-decode">Password (if used during encoding):</label>
+      <input type="password" id="pwd-decode" name="pwd" />
+
+      <label for="image-decode">Select image:</label>
+      <input type="file" id="image-decode" name="image" accept="image/*" required onchange="previewImage(event, 'preview-decode')" />
+
+      <img id="preview-decode" class="preview" style="display:none;" />
+
+      <input type="submit" value="Decode" />
+    </form>
+
+
+  </div>
+
+  <script>
+    function previewImage(event, previewId) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = document.getElementById(previewId);
+          img.src = e.target.result;
+          img.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  </script>
+
+</body>
+</html>
