@@ -16,32 +16,48 @@ def password_to_fernet(password: str) -> Fernet:
     return Fernet(base64.urlsafe_b64encode(key))
 
 def encode_message(image: Image.Image, message: str, output_path: str):
-    # Embed message into image pixels using LSB
-    binary = ''.join([format(ord(c), '08b') for c in message]) + '1111111111111110'  # EOF marker
+    """
+    Embed a message into an image using LSB steganography.
+    Raises ValueError if the message is too large for the image.
+    """
+    EOF_MARKER = '11111110'  # 8 bits
+    binary = ''.join([format(ord(c), '08b') for c in message]) + EOF_MARKER
     img = image.convert('RGB')
     pixels = img.load()
+    width, height = img.size
+    max_bits = width * height * 3
+    if len(binary) > max_bits:
+        raise ValueError('Message is too large to encode in this image.')
     idx = 0
-    for i in range(img.size[0]):
-        for j in range(img.size[1]):
+    for i in range(width):
+        for j in range(height):
             if idx < len(binary):
                 r, g, b = pixels[i, j]
                 r = (r & ~1) | int(binary[idx])
-                if idx + 1 < len(binary):
-                    g = (g & ~1) | int(binary[idx + 1])
-                if idx + 2 < len(binary):
-                    b = (b & ~1) | int(binary[idx + 2])
+                idx += 1
+                if idx < len(binary):
+                    g = (g & ~1) | int(binary[idx])
+                    idx += 1
+                if idx < len(binary):
+                    b = (b & ~1) | int(binary[idx])
+                    idx += 1
                 pixels[i, j] = (r, g, b)
-                idx += 3
             else:
                 break
     img.save(output_path)
 
 def decode_message(image: Image.Image) -> str:
+    """
+    Extract a hidden message from an image using LSB steganography.
+    Returns the decoded message as a string.
+    """
+    EOF_MARKER = '11111110'  # 8 bits
     binary = ''
     img = image.convert('RGB')
     pixels = img.load()
-    for i in range(img.size[0]):
-        for j in range(img.size[1]):
+    width, height = img.size
+    for i in range(width):
+        for j in range(height):
             r, g, b = pixels[i, j]
             binary += str(r & 1)
             binary += str(g & 1)
@@ -49,16 +65,24 @@ def decode_message(image: Image.Image) -> str:
     bytes_list = [binary[i:i+8] for i in range(0, len(binary), 8)]
     message = ''
     for byte in bytes_list:
-        if byte == '11111110':  # EOF
+        if byte == EOF_MARKER:
             break
         message += chr(int(byte, 2))
     return message
 
 def encrypt_message(message: str, password: str) -> str:
+    """
+    Encrypt a message using a password-derived Fernet key.
+    Returns the encrypted message as a string.
+    """
     f = password_to_fernet(password)
     token = f.encrypt(message.encode())
     return token.decode()
 
 def decrypt_message(token: str, password: str) -> str:
+    """
+    Decrypt a message using a password-derived Fernet key.
+    Returns the decrypted message as a string.
+    """
     f = password_to_fernet(password)
     return f.decrypt(token.encode()).decode()
